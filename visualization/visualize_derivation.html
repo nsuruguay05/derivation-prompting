@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Derivation Tree Viewer</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <div id="loading">Loading derivation tree...</div>
+    <div id="error">Error loading the derivation tree. Make sure derivation_prompting.json exists in the parent folder.</div>
+    <div id="tree-container"></div>
+
+    <script>
+        class DerivationTree {
+            constructor(container) {
+                this.container = container;
+                this.expandedNodes = new Set();
+                this.rulePositions = new Map(); // Store border-rule pairs
+            }
+
+            updateRulePositions() {
+                this.rulePositions.forEach((pair) => {
+                    const { border, rule } = pair;
+                    rule.style.top = `${border.offsetTop - 10}px`;
+                });
+            }
+
+            createTree(data) {
+                const treeElement = document.createElement('div');
+                treeElement.className = 'derivation-tree';
+
+                if (data.rule) {
+                    const subtreeRule = document.createElement('div');
+                    subtreeRule.className = 'subtree-rule';
+
+                    const subtree = document.createElement('div');
+                    subtree.className = 'subtree';
+
+                    let childrenContainer = null;
+                    if (data.children) {
+                        childrenContainer = document.createElement('div');
+                        childrenContainer.className = 'children';
+                        childrenContainer.style.display = this.expandedNodes.has(data) ? 'flex' : 'none';
+
+                        data.children.forEach(child => {
+                            const childDiv = document.createElement('div');
+                            childDiv.className = 'child';
+                            childDiv.appendChild(this.createTree(child));
+                            childrenContainer.appendChild(childDiv);
+                        });
+
+                        subtree.appendChild(childrenContainer);
+                    }
+
+                    const border = document.createElement('div');
+                    border.className = 'border';
+                    subtree.appendChild(border);
+
+                    const text = document.createElement('div');
+                    text.className = 'text-content';
+                    text.innerHTML = data.text;
+                    subtree.appendChild(text);
+
+                    const ruleText = document.createElement('div');
+                    ruleText.className = 'rule-text';
+                    ruleText.textContent = data.rule;
+                    
+                    // Store the border-rule pair
+                    this.rulePositions.set(data, { border, rule: ruleText });
+                    
+                    // Only add click handler if there are children
+                    if (childrenContainer) {
+                        ruleText.onclick = () => {
+                            this.toggleExpanded(data, childrenContainer);
+                            // Wait for DOM update before repositioning rules
+                            setTimeout(() => this.updateRulePositions(), 0);
+                        };
+                    }
+
+                    subtreeRule.appendChild(subtree);
+                    subtreeRule.appendChild(ruleText);
+
+                    // Initial positioning
+                    setTimeout(() => {
+                        ruleText.style.top = `${border.offsetTop - 10}px`;
+                    }, 0);
+
+                    treeElement.appendChild(subtreeRule);
+                } else {
+                    const text = document.createElement('div');
+                    text.className = 'text-content';
+                    text.innerHTML = data.text;
+                    treeElement.appendChild(text);
+                }
+
+                return treeElement;
+            }
+
+            toggleExpanded(data, childrenContainer) {
+                if (this.expandedNodes.has(data)) {
+                    this.expandedNodes.delete(data);
+                    childrenContainer.style.display = 'none';
+                } else {
+                    this.expandedNodes.add(data);
+                    childrenContainer.style.display = 'flex';
+                }
+            }
+
+            render(data) {
+                this.container.innerHTML = '';
+                this.rulePositions.clear(); // Clear stored positions
+                this.container.appendChild(this.createTree(data));
+                // Initial positioning of all rules
+                setTimeout(() => this.updateRulePositions(), 0);
+            }
+        }
+
+        // Initialize the tree with JSON loading
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('tree-container');
+            const loadingElement = document.getElementById('loading');
+            const errorElement = document.getElementById('error');
+            const tree = new DerivationTree(container);
+
+            fetch('../derivation_tree.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load JSON file');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    loadingElement.style.display = 'none';
+                    errorElement.style.display = 'none';
+                    tree.render(data);
+                })
+                .catch(error => {
+                    console.error('Error loading the derivation tree:', error);
+                    loadingElement.style.display = 'none';
+                    errorElement.style.display = 'block';
+                });
+        });
+    </script>
+</body>
+</html>
