@@ -3,7 +3,7 @@
 ![derivation_prompting](imgs/derivation_prompting.png)
 
 Official implementation for the paper [Derivation Prompting: A Logic-Based Method for
-Improving Retrieval-Augmented Generation](#) with code, data and prompts.
+Improving Retrieval-Augmented Generation](https://link.springer.com/chapter/10.1007/978-3-031-80366-6_34) with code, data and prompts.
 
 **Note:** The main prompt, few-shot examples and corpus used in this work are all in Spanish due to the nature of the project. However, the code can be easily adapted to other languages.
 
