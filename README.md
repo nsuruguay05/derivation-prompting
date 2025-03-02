@@ -75,4 +75,11 @@ Now you can interactively explore the derivation tree generated from your questi
 
 ## Citation
 
-The paper was accepted at the Iberamia'2024 conference. We will update this section with the citation once the proceedings are published.
+```bibtex
+@inproceedings{sastre2025derivation,
+  title="Derivation Prompting: A Logic-Based Method for Improving Retrieval-Augmented Generation",
+  author="Sastre, Ignacio and Moncecchi, Guillermo and Ros{\'a}, Aiala",
+  booktitle="Advances in Artificial Intelligence -- IBERAMIA 2024",
+  year="2025",
+}
+```
